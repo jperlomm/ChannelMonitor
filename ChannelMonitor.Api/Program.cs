@@ -14,16 +14,19 @@ builder.Services.AddCors(opciones =>
 });
 
 builder.Services.AddOutputCache();
+
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Servicios
 var app = builder.Build();
 // Middleware
 
-app.UseCors();
-app.UseOutputCache();
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors();
+app.UseOutputCache();
 
 app.MapGet("/", () => "Hello World!");
 
