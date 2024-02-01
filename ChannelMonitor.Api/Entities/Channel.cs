@@ -24,7 +24,7 @@
         public int GeneralFailureId { get; set; }
         public AlertStatus GeneralFailure { get; set; } = null!;
 
-        public ChannelDetails ChannelDetails { get; set; } = null!;
+        public ChannelDetail ChannelDetails { get; set; } = null!;
         public List<FailureLogging> FailureLogging { get; set; } = new List<FailureLogging>();
         public DateTime? LastScan { get; set; }
         public double? LastVolume { get; set; }

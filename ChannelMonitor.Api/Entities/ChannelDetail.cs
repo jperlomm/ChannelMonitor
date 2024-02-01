@@ -1,6 +1,6 @@
 ﻿namespace ChannelMonitor.Api.Entities
 {
-    public class ChannelDetails
+    public class ChannelDetail
     {
         public int Id { get; set; }
         public int? IdChannel { get; set; }
@@ -8,12 +8,6 @@
         public int? PidVideo { get; set; }
         public ChannelOrigin? ChannelOrigin { get; set; }
 
-    }
-
-    public enum ChannelOrigin
-    {
-        Satelital,
-        Internet
     }
 
 }
