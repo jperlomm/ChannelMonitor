@@ -1,8 +1,14 @@
+using ChannelMonitor.Api;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var allowOrigins = builder.Configuration.GetValue<string>("allowOrigins")!;
 
 // Servicios
+
+builder.Services.AddDbContext<ApplicationDBContext>(opciones =>
+    opciones.UseSqlServer("name=DefaultConnection"));
 
 builder.Services.AddCors(opciones =>
 {
