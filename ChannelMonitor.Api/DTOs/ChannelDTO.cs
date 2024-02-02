@@ -1,6 +1,8 @@
-﻿namespace ChannelMonitor.Api.Entities
+﻿using ChannelMonitor.Api.Entities;
+
+namespace ChannelMonitor.Api.DTOs
 {
-    public class Channel
+    public class ChannelDTO
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
@@ -10,18 +12,18 @@
         public bool InProcessing { get; set; }
         public bool ShouldMonitorVideo { get; set; } = true;
         public bool ShouldMonitorAudio { get; set; } = true;
-        public int AudioThreshold { get; set; } = -80;
-        public int VideoFilterLevel { get; set; } = 1;
+        public int AudioThreshold { get; set; }
+        public int VideoFilterLevel { get; set; }
         public TimeSpan? MonitoringStartTime { get; set; }
         public TimeSpan? MonitoringEndTime { get; set; }
 
-        public int? VideoFailureId { get; set; } = 4;
+        public int? VideoFailureId { get; set; }
         public AlertStatus VideoFailure { get; set; } = null!;
 
-        public int? AudioFailureId { get; set; } = 4;
+        public int? AudioFailureId { get; set; }
         public AlertStatus AudioFailure { get; set; } = null!;
 
-        public int? GeneralFailureId { get; set; } = 4;
+        public int? GeneralFailureId { get; set; }
         public AlertStatus GeneralFailure { get; set; } = null!;
 
         public ChannelDetail? ChannelDetails { get; set; }
@@ -29,6 +31,5 @@
         public DateTime? LastScan { get; set; }
         public double? LastVolume { get; set; }
         public int? IdChannelBackUp { get; set; }
-
     }
 }

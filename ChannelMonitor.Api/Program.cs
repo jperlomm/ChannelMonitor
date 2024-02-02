@@ -1,4 +1,6 @@
 using ChannelMonitor.Api;
+using ChannelMonitor.Api.Endpoints;
+using ChannelMonitor.Api.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +26,14 @@ builder.Services.AddOutputCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IRepositorioChannel, RepositorioChannel>();
+builder.Services.AddScoped<IRepositorioAlertStatus, RepositorioAlertStatus>();
+builder.Services.AddScoped<IRepositorioChannelDetail, RepositorioChannelDetail>();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddAutoMapper(typeof(Program));
+
 // Servicios
 var app = builder.Build();
 // Middleware
@@ -34,7 +44,7 @@ app.UseSwaggerUI();
 app.UseCors();
 app.UseOutputCache();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGroup("/channels").MapChannels();
 
 // Middleware
 app.Run();

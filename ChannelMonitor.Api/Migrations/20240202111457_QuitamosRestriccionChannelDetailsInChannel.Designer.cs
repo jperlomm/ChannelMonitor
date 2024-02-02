@@ -4,6 +4,7 @@ using ChannelMonitor.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChannelMonitor.Api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240202111457_QuitamosRestriccionChannelDetailsInChannel")]
+    partial class QuitamosRestriccionChannelDetailsInChannel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,7 +56,7 @@ namespace ChannelMonitor.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AudioFailureId")
+                    b.Property<int>("AudioFailureId")
                         .HasColumnType("int");
 
                     b.Property<int>("AudioThreshold")
@@ -62,7 +65,7 @@ namespace ChannelMonitor.Api.Migrations
                     b.Property<int?>("ChannelDetailsId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GeneralFailureId")
+                    b.Property<int>("GeneralFailureId")
                         .HasColumnType("int");
 
                     b.Property<int?>("IdChannelBackUp")
@@ -104,7 +107,7 @@ namespace ChannelMonitor.Api.Migrations
                     b.Property<bool>("ShouldMonitorVideo")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("VideoFailureId")
+                    b.Property<int>("VideoFailureId")
                         .HasColumnType("int");
 
                     b.Property<int>("VideoFilterLevel")
@@ -221,7 +224,8 @@ namespace ChannelMonitor.Api.Migrations
                     b.HasOne("ChannelMonitor.Api.Entities.AlertStatus", "AudioFailure")
                         .WithMany()
                         .HasForeignKey("AudioFailureId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ChannelMonitor.Api.Entities.ChannelDetail", "ChannelDetails")
                         .WithMany()
@@ -230,12 +234,14 @@ namespace ChannelMonitor.Api.Migrations
                     b.HasOne("ChannelMonitor.Api.Entities.AlertStatus", "GeneralFailure")
                         .WithMany()
                         .HasForeignKey("GeneralFailureId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ChannelMonitor.Api.Entities.AlertStatus", "VideoFailure")
                         .WithMany()
                         .HasForeignKey("VideoFailureId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("AudioFailure");
 
