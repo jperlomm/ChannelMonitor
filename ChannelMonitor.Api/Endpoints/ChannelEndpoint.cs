@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Entities;
+using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Repositories;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -14,7 +16,7 @@ namespace ChannelMonitor.Api.Endpoints
         {
             group.MapGet("/", GetAll).DisableAntiforgery();
             group.MapPost("/", Create).DisableAntiforgery();
-            group.MapPut("/{id:int}", Update).DisableAntiforgery();
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>();
 
             return group;
         }
@@ -31,7 +33,7 @@ namespace ChannelMonitor.Api.Endpoints
             return TypedResults.Created($"/channels/{id}", channelDTO);
         }
 
-        static async Task<Results<NoContent, NotFound>> Update(int id, [FromForm] UpdateChannelDTO updateChannelDTO,
+        static async Task<Results<NoContent, NotFound, ValidationProblem>> Update(int id, [FromForm] UpdateChannelDTO updateChannelDTO,
             IRepositorioChannel repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, IRepositorioAlertStatus repositorioAlertStatus,
             IRepositorioChannelDetail repositorioChannelDetail)
         {
@@ -39,28 +41,6 @@ namespace ChannelMonitor.Api.Endpoints
             if(channelDb is null) return TypedResults.NotFound();
 
             var updatedChannel = mapper.Map(updateChannelDTO, channelDb);
-
-            // verificamos si el 'VideoFailureId', 'AudioFailureId' y 'GeneralFailureId' existen en 'AlertStatus'
-            if (updateChannelDTO.VideoFailureId.HasValue && !await repositorioAlertStatus.Exist(updateChannelDTO.VideoFailureId.Value))
-            {
-                return TypedResults.NotFound();
-            }
-
-            if (updateChannelDTO.AudioFailureId.HasValue && !await repositorioAlertStatus.Exist(updateChannelDTO.AudioFailureId.Value))
-            {
-                return TypedResults.NotFound();
-            }
-
-            if (updateChannelDTO.GeneralFailureId.HasValue && !await repositorioAlertStatus.Exist(updateChannelDTO.GeneralFailureId.Value))
-            {
-                return TypedResults.NotFound();
-            }
-
-            // verificamos si 'ChannelDetails' existe
-            if (updateChannelDTO.ChannelDetails != null && !await repositorioChannelDetail.Exist(updateChannelDTO.ChannelDetails.Id))
-            {
-                return TypedResults.NotFound();
-            }
 
             await repositorio.Update(updatedChannel);
             await outputCacheStore.EvictByTagAsync("channel-get", default);

@@ -41,6 +41,7 @@ namespace ChannelMonitor.Api
         public DbSet<ChannelOrigin> ChannelOrigins { get; set; }
         public DbSet<FailureLogging> FailureLoggings { get; set; }
         public DbSet<FailureType> FailureTypes { get; set; }
+        public DbSet<Error> Errors { get; set; }
 
     }
 }

@@ -25,7 +25,9 @@ namespace ChannelMonitor.Api.DTOs
         public int? GeneralFailureId { get; set; }
         public AlertStatus? GeneralFailure { get; set; }
 
+        public int? ChannelDetailsId { get; set; }
         public ChannelDetail? ChannelDetails { get; set; }
+
         public List<FailureLogging>? FailureLogging { get; set; } = new List<FailureLogging>();
         public DateTime? LastScan { get; set; }
         public double? LastVolume { get; set; }
