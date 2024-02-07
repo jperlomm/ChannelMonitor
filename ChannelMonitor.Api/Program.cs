@@ -2,10 +2,12 @@ using ChannelMonitor.Api;
 using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Repositories;
+using ChannelMonitor.Api.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,7 +57,16 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddProblemDetails();
 
 // Para autorizacion y roles.
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = false,
+    ValidateAudience = false,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    //IssuerSigningKey = Keys.GetKey(builder.Configuration).First(), // Usar solo una llave
+    IssuerSigningKeys = Keys.GetAllKeys(builder.Configuration), // Usar multiples llaves
+    ClockSkew = TimeSpan.Zero
+});
 builder.Services.AddAuthorization();
 
 // Servicios
@@ -94,6 +105,7 @@ app.UseOutputCache();
 app.UseAuthorization();
 
 app.MapGroup("/channels").MapChannels();
+app.MapGroup("/users").MapUsers();
 
 // Middleware
 app.Run();
