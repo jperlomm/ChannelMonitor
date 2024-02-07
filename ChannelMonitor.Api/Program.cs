@@ -4,6 +4,7 @@ using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,15 @@ var allowOrigins = builder.Configuration.GetValue<string>("allowOrigins")!;
 
 builder.Services.AddDbContext<ApplicationDBContext>(opciones =>
     opciones.UseSqlServer("name=DefaultConnection"));
+
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDBContext>()
+    .AddDefaultTokenProviders();
+
+// Para crear y manejar usuarios
+builder.Services.AddScoped<UserManager<IdentityUser>>();
+// Para logear usuarios
+builder.Services.AddScoped<SignInManager<IdentityUser>>();
 
 builder.Services.AddCors(opciones =>
 {
@@ -43,6 +53,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Para el manejo de errores cuando ocurre alguna excepcion.
 builder.Services.AddProblemDetails();
+
+// Para autorizacion y roles.
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorization();
 
 // Servicios
 var app = builder.Build();
@@ -77,12 +91,9 @@ app.UseStaticFiles();
 app.UseCors();
 app.UseOutputCache();
 
-app.MapGroup("/channels").MapChannels();
+app.UseAuthorization();
 
-app.MapGet("/error", () =>
-{
-    throw new InvalidOperationException("Error");
-});
+app.MapGroup("/channels").MapChannels();
 
 // Middleware
 app.Run();
