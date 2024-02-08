@@ -2,6 +2,7 @@ using ChannelMonitor.Api;
 using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Repositories;
+using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
@@ -46,6 +47,8 @@ builder.Services.AddScoped<IRepositorioAlertStatus, RepositorioAlertStatus>();
 builder.Services.AddScoped<IRepositorioChannelDetail, RepositorioChannelDetail>();
 builder.Services.AddScoped<IRepositorioErrors, RepositorioErrors>();
 
+builder.Services.AddTransient<IUsersServices, UsersServices>();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(Program));
@@ -57,17 +60,28 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddProblemDetails();
 
 // Para autorizacion y roles.
-builder.Services.AddAuthentication().AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication().AddJwtBearer(options => 
 {
-    ValidateIssuer = false,
-    ValidateAudience = false,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    //IssuerSigningKey = Keys.GetKey(builder.Configuration).First(), // Usar solo una llave
-    IssuerSigningKeys = Keys.GetAllKeys(builder.Configuration), // Usar multiples llaves
-    ClockSkew = TimeSpan.Zero
+    // Para que no haga el mapeo de los claims (les cambia el nombre de clave).
+    options.MapInboundClaims = false;
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        //IssuerSigningKey = Keys.GetKey(builder.Configuration).First(), // Usar solo una llave
+        IssuerSigningKeys = Keys.GetAllKeys(builder.Configuration), // Usar multiples llaves
+        ClockSkew = TimeSpan.Zero
+    };
+
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Agregamos politica de administrador.
+    options.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
+});
 
 // Servicios
 var app = builder.Build();

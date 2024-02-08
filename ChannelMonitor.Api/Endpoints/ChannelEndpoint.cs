@@ -17,6 +17,7 @@ namespace ChannelMonitor.Api.Endpoints
             group.MapGet("/", GetAll).DisableAntiforgery().RequireAuthorization();
             group.MapPost("/", Create).DisableAntiforgery();
             group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>();
+            group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
 
             return group;
         }
@@ -52,6 +53,21 @@ namespace ChannelMonitor.Api.Endpoints
             var channels = await repositorio.GetAll();
             var channelsDTO = mapper.Map<List<ChannelDTO>>(channels);
             return TypedResults.Ok(channelsDTO);
+        }
+
+        static async Task<Results<NoContent, NotFound>> Delete(int id, IRepositorioChannel repositorio,
+            IOutputCacheStore outputCacheStore)
+        {
+            var channelDB = await repositorio.GetById(id);
+
+            if (channelDB is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await repositorio.Delete(id);
+            await outputCacheStore.EvictByTagAsync("channel-get", default);
+            return TypedResults.NoContent();
         }
 
     }
