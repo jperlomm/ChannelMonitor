@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Services;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ChannelMonitor.Api.Endpoints
 {

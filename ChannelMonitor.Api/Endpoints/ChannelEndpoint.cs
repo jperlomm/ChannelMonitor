@@ -15,8 +15,12 @@ namespace ChannelMonitor.Api.Endpoints
         public static RouteGroupBuilder MapChannels(this RouteGroupBuilder group)
         {
             group.MapGet("/", GetAll).DisableAntiforgery();
-            group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization();
-            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>().RequireAuthorization();
+
+            group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi(); ;
+
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>()
+                .RequireAuthorization().WithOpenApi(); ;
+
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
 
             return group;

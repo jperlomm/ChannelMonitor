@@ -3,6 +3,7 @@ using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Repositories;
 using ChannelMonitor.Api.Services;
+using ChannelMonitor.Api.Swagger;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
@@ -42,10 +43,23 @@ builder.Services.AddOutputCache();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
+    
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "API Monitor de canales"
     });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
+    });
+
+    c.OperationFilter<AuthorizartionFilter>();
+
 });
 
 builder.Services.AddScoped<IRepositorioChannel, RepositorioChannel>();
