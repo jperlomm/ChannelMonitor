@@ -9,6 +9,7 @@ namespace ChannelMonitor.Api.Repositories
         Task<List<Channel>> GetAll();
         Task<Channel?> GetById(int id);
         Task Delete(int id);
+        Task<bool> Exist(int id);
 
     }
 }

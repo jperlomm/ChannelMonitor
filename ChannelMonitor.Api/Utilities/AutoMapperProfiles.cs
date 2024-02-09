@@ -24,6 +24,10 @@ namespace ChannelMonitor.Api.Utilities
             CreateMap<UpdateChannelDTO, Channel>()
                  .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+            CreateMap<FailureLogging, FailureLoggingDTO>();
+            CreateMap<CreateFailureLoggingDTO, FailureLogging>()
+                .ForMember(x => x.Url, opciones => opciones.Ignore());
+
         }
 
     }

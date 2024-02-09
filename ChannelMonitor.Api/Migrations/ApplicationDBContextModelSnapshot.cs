@@ -196,16 +196,13 @@ namespace ChannelMonitor.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ChannelId")
+                    b.Property<int>("ChannelId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DateFailure")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FailureTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdChannel")
+                    b.Property<int?>("FailureTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("Url")
@@ -214,8 +211,6 @@ namespace ChannelMonitor.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
-
-                    b.HasIndex("FailureTypeId");
 
                     b.ToTable("FailureLoggings");
                 });
@@ -478,15 +473,9 @@ namespace ChannelMonitor.Api.Migrations
                 {
                     b.HasOne("ChannelMonitor.Api.Entities.Channel", null)
                         .WithMany("FailureLogging")
-                        .HasForeignKey("ChannelId");
-
-                    b.HasOne("ChannelMonitor.Api.Entities.FailureType", "FailureType")
-                        .WithMany()
-                        .HasForeignKey("FailureTypeId")
+                        .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("FailureType");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

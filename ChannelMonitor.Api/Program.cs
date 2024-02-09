@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,14 +41,21 @@ builder.Services.AddCors(opciones =>
 builder.Services.AddOutputCache();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "API Monitor de canales"
+    });
+});
 
 builder.Services.AddScoped<IRepositorioChannel, RepositorioChannel>();
 builder.Services.AddScoped<IRepositorioAlertStatus, RepositorioAlertStatus>();
 builder.Services.AddScoped<IRepositorioChannelDetail, RepositorioChannelDetail>();
 builder.Services.AddScoped<IRepositorioErrors, RepositorioErrors>();
+builder.Services.AddScoped<IRepositorioFailureLogging, RepositorioFailureLogging>();
 
 builder.Services.AddTransient<IUsersServices, UsersServices>();
+builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -120,6 +128,7 @@ app.UseAuthorization();
 
 app.MapGroup("/channels").MapChannels();
 app.MapGroup("/users").MapUsers();
+app.MapGroup("/failureloggin").MapFailureLogging();
 
 // Middleware
 app.Run();

@@ -42,5 +42,10 @@ namespace ChannelMonitor.Api.Repositories
             await context.Channels.Where(p => p.Id == id).ExecuteDeleteAsync();
         }
 
+        public async Task<bool> Exist(int id)
+        {
+            return await context.Channels.AnyAsync(a => a.Id == id);
+        }
+
     }
 }

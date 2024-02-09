@@ -14,9 +14,9 @@ namespace ChannelMonitor.Api.Endpoints
     {
         public static RouteGroupBuilder MapChannels(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll).DisableAntiforgery().RequireAuthorization();
-            group.MapPost("/", Create).DisableAntiforgery();
-            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>();
+            group.MapGet("/", GetAll).DisableAntiforgery();
+            group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization();
+            group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>().RequireAuthorization();
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
 
             return group;
@@ -48,7 +48,8 @@ namespace ChannelMonitor.Api.Endpoints
             return TypedResults.NoContent();
         }
 
-        static async Task<Ok<List<ChannelDTO>>> GetAll(IRepositorioChannel repositorio, IMapper mapper)
+        static async Task<Ok<List<ChannelDTO>>> GetAll
+            (IRepositorioChannel repositorio, IMapper mapper)
         {
             var channels = await repositorio.GetAll();
             var channelsDTO = mapper.Map<List<ChannelDTO>>(channels);
