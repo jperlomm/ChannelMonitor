@@ -23,7 +23,18 @@ namespace ChannelMonitor.Api.Repositories
 
         public async Task<List<Channel>> GetAll()
         {
-            return await context.Channels.OrderBy(x => x.Number).ToListAsync();
+            return await context.Channels.OrderBy(x => x.Id).ToListAsync();
+        }
+
+        public async Task<List<Channel>> GetAlarmedChannels()
+        {
+            return await context.Channels
+            .Where(c => c.GeneralFailureId == 3 || c.GeneralFailureId == 2 
+                || c.AudioFailureId == 3 || c.AudioFailureId == 2 
+                || c.VideoFailureId == 3 || c.VideoFailureId == 2)
+            .OrderBy(x => x.Id)
+            .ToListAsync();
+
         }
 
         public async Task Update(Channel channel)
@@ -36,6 +47,8 @@ namespace ChannelMonitor.Api.Repositories
         {
             return await context.Channels.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
         }
+
+
 
         public async Task Delete(int id)
         {

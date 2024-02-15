@@ -6,6 +6,7 @@ using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Swagger;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -140,6 +141,7 @@ app.UseOutputCache();
 
 app.UseAuthorization();
 
+app.MapGet("/", () => "use /swagger para documentación");
 app.MapGroup("/channels").MapChannels();
 app.MapGroup("/users").MapUsers();
 app.MapGroup("/failureloggin").MapFailureLogging();

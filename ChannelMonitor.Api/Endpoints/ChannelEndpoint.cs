@@ -16,6 +16,10 @@ namespace ChannelMonitor.Api.Endpoints
         {
             group.MapGet("/", GetAll).DisableAntiforgery();
 
+            group.MapGet("/alarmed", GetAlarmedChannels).DisableAntiforgery();
+
+            group.MapGet("/{id:int}", GetById).DisableAntiforgery();
+
             group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi(); ;
 
             group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>()
@@ -58,6 +62,27 @@ namespace ChannelMonitor.Api.Endpoints
             var channels = await repositorio.GetAll();
             var channelsDTO = mapper.Map<List<ChannelDTO>>(channels);
             return TypedResults.Ok(channelsDTO);
+        }
+
+        static async Task<Ok<List<ChannelDTO>>> GetAlarmedChannels
+            (IRepositorioChannel repositorio, IMapper mapper)
+        {
+            var channels = await repositorio.GetAlarmedChannels();
+            var channelsDTO = mapper.Map<List<ChannelDTO>>(channels);
+            return TypedResults.Ok(channelsDTO);
+        }
+
+        static async Task<Results<Ok<ChannelDTO>, NotFound>> GetById(int id,
+            IRepositorioChannel repositorio, IMapper mapper)
+        {
+            var channel = await repositorio.GetById(id);
+
+            if (channel is null) return TypedResults.NotFound();
+
+            var channelDTO = mapper.Map<ChannelDTO>(channel);
+
+            return TypedResults.Ok(channelDTO);
+
         }
 
         static async Task<Results<NoContent, NotFound>> Delete(int id, IRepositorioChannel repositorio,
