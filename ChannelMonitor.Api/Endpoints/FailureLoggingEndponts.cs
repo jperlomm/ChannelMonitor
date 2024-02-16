@@ -15,10 +15,28 @@ namespace ChannelMonitor.Api.Endpoints
 
         public static RouteGroupBuilder MapFailureLogging(this RouteGroupBuilder group)
         {
-            group.MapPost("/", Create).DisableAntiforgery().AddEndpointFilter<ValidationFilters<CreateFailureLoggingDTO>>()
+            group.MapGet("/", GetAll).DisableAntiforgery();
+
+            group.MapPost("/", Create)
+                .DisableAntiforgery()
+                .AddEndpointFilter<ValidationFilters<CreateFailureLoggingDTO>>()
                 .WithOpenApi();
 
             return group;
+
+        }
+
+        static async Task<Results<Ok<List<FailureLoggingDTO>>, NotFound>> GetAll(int channelId,
+            IRepositorioFailureLogging repositorioFailureLoggin, IRepositorioChannel repositorioChannel,
+            IMapper mapper)
+        {
+            if (!await repositorioChannel.Exist(channelId)) return TypedResults.NotFound();
+
+            var failureLogin = await repositorioFailureLoggin.GetAll(channelId);
+            var failureLoginDTO = mapper.Map<List<FailureLoggingDTO>>(failureLogin);
+
+            return TypedResults.Ok(failureLoginDTO);
+
         }
 
         static async Task<Created<FailureLoggingDTO>> Create([FromForm] CreateFailureLoggingDTO failureLoggingDTO,

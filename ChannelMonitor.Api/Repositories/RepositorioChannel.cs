@@ -48,8 +48,6 @@ namespace ChannelMonitor.Api.Repositories
             return await context.Channels.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
         }
 
-
-
         public async Task Delete(int id)
         {
             await context.Channels.Where(p => p.Id == id).ExecuteDeleteAsync();

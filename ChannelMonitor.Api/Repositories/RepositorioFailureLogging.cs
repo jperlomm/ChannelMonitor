@@ -1,4 +1,5 @@
 ﻿using ChannelMonitor.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChannelMonitor.Api.Repositories
 {
@@ -18,6 +19,11 @@ namespace ChannelMonitor.Api.Repositories
             context.Add(failureLogging);
             await context.SaveChangesAsync();
             return failureLogging.Id;
+        }
+
+        public async Task<List<FailureLogging>> GetAll(int channelId)
+        {
+            return await context.FailureLoggings.Where(c => c.ChannelId == channelId).ToListAsync();
         }
 
     }
