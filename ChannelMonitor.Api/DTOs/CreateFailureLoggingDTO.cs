@@ -7,5 +7,6 @@ namespace ChannelMonitor.Api.DTOs
         public int ChannelId { get; set; }
         public int? FailureTypeId { get; set; }
         public IFormFile? File { get; set; }
+        public string? Detail { get; set; }
     }
 }
