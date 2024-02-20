@@ -1,4 +1,5 @@
-﻿using ChannelMonitor.Api.Entities;
+﻿using ChannelMonitor.Api.DTOs;
+using ChannelMonitor.Api.Entities;
 
 namespace ChannelMonitor.Api.Repositories
 {
@@ -11,6 +12,7 @@ namespace ChannelMonitor.Api.Repositories
         Task<Channel?> GetById(int id);
         Task Delete(int id);
         Task<bool> Exist(int id);
+        Task<List<Channel>> Filter(ChannelFilterDTO channelFilterDTO);
 
     }
 }

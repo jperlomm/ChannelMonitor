@@ -3,6 +3,7 @@ using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Repositories;
+using ChannelMonitor.Api.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,13 @@ namespace ChannelMonitor.Api.Endpoints
     {
         public static RouteGroupBuilder MapChannels(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll).DisableAntiforgery();
+            group.MapGet("/", GetAll);
 
-            group.MapGet("/alarmed", GetAlarmedChannels).DisableAntiforgery();
+            group.MapGet("/alarmed", GetAlarmedChannels);
 
-            group.MapGet("/{id:int}", GetById).DisableAntiforgery();
+            group.MapGet("/{id:int}", GetById);
+
+            group.MapGet("/filter", GetByFilter).AddParameterChannelFilterAOpenAPI();
 
             group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi(); ;
 
@@ -98,6 +101,14 @@ namespace ChannelMonitor.Api.Endpoints
             await repositorio.Delete(id);
             await outputCacheStore.EvictByTagAsync("channel-get", default);
             return TypedResults.NoContent();
+        }
+
+        static async Task<Ok<List<ChannelDTO>>> GetByFilter
+            (ChannelFilterDTO channelFilterDTO, IRepositorioChannel repositorio, IMapper mapper)
+        {
+            var channels = await repositorio.Filter(channelFilterDTO);
+            var channelsDTO = mapper.Map<List<ChannelDTO>>(channels);
+            return TypedResults.Ok(channelsDTO);
         }
 
     }

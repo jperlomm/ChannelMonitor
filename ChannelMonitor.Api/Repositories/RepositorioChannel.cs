@@ -1,5 +1,7 @@
-﻿using ChannelMonitor.Api.Entities;
+﻿using ChannelMonitor.Api.DTOs;
+using ChannelMonitor.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ChannelMonitor.Api.Repositories
 {
@@ -58,5 +60,28 @@ namespace ChannelMonitor.Api.Repositories
             return await context.Channels.AnyAsync(a => a.Id == id);
         }
 
+        public async Task<List<Channel>> Filter(ChannelFilterDTO channelFilterDTO)
+        {
+            var channelsQueryable = context.Channels.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(channelFilterDTO.Name))
+            {
+                channelsQueryable = channelsQueryable
+                    .Where(p => p.Name.Contains(channelFilterDTO.Name));
+            }
+
+            if (channelFilterDTO.Alerted)
+            {
+                channelsQueryable = channelsQueryable
+                    .Where(c => c.GeneralFailureId == 3 || c.GeneralFailureId == 2
+                    || c.AudioFailureId == 3 || c.AudioFailureId == 2
+                    || c.VideoFailureId == 3 || c.VideoFailureId == 2);
+            }
+
+            var channels = await channelsQueryable.ToListAsync();
+
+            return channels;
+
+        }
     }
 }
