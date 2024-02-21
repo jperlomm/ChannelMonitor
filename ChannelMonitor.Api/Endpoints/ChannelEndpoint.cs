@@ -31,6 +31,7 @@ namespace ChannelMonitor.Api.Endpoints
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
 
             return group;
+
         }
 
         static async Task<Created<ChannelDTO>> Create([FromForm] CreateChannelDTO createChannelDTO,
