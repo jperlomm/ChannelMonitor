@@ -1,17 +1,25 @@
 using ChannelMonitor.Api;
 using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
+using ChannelMonitor.Api.Hub;
 using ChannelMonitor.Api.Repositories;
 using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Swagger;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Net;
+using System.Net.WebSockets;
+using System.Text;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +43,7 @@ builder.Services.AddCors(opciones =>
 {
     opciones.AddDefaultPolicy(configuracion =>
     {
-        configuracion.WithOrigins(allowOrigins).AllowAnyHeader().AllowAnyMethod();
+        configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173" ).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 
 });
@@ -72,6 +80,8 @@ builder.Services.AddScoped<IRepositorioFailureLogging, RepositorioFailureLogging
 builder.Services.AddTransient<IUsersServices, UsersServices>();
 builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
 
+builder.Services.AddScoped<IRepositorioUpdateEntity, RepositorioUpdateEntity>();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(Program));
@@ -106,12 +116,17 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
 });
 
+builder.Services.AddSignalR();
+
 // Servicios
 var app = builder.Build();
 // Middleware
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Agrega middleware para permitir el enrutamiento de los endpoints
+app.UseRouting();
 
 // Para el manejo de errores cuando ocurre alguna excepcion. Guardado en DB.
 app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
@@ -145,6 +160,8 @@ app.MapGet("/", () => "use /swagger para documentación");
 app.MapGroup("/channels").MapChannels();
 app.MapGroup("/users").MapUsers();
 app.MapGroup("/failureloggin").MapFailureLogging();
+
+app.MapHub<UpdateEntitiHub>("/myhub");
 
 // Middleware
 app.Run();

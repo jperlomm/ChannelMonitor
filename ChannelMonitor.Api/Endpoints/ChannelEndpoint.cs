@@ -26,7 +26,7 @@ namespace ChannelMonitor.Api.Endpoints
             group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi(); ;
 
             group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>()
-                .RequireAuthorization().WithOpenApi(); ;
+                .RequireAuthorization().WithOpenApi();
 
             group.MapDelete("/{id:int}", Delete).RequireAuthorization("isadmin");
 
@@ -48,7 +48,7 @@ namespace ChannelMonitor.Api.Endpoints
 
         static async Task<Results<NoContent, NotFound, ValidationProblem>> Update(int id, [FromForm] UpdateChannelDTO updateChannelDTO,
             IRepositorioChannel repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, IRepositorioAlertStatus repositorioAlertStatus,
-            IRepositorioChannelDetail repositorioChannelDetail)
+            IRepositorioChannelDetail repositorioChannelDetail, IRepositorioUpdateEntity repositorioUpdateEntity)
         {
             var channelDb = await repositorio.GetById(id);
             if(channelDb is null) return TypedResults.NotFound();
@@ -57,7 +57,17 @@ namespace ChannelMonitor.Api.Endpoints
 
             await repositorio.Update(updatedChannel);
             await outputCacheStore.EvictByTagAsync("channel-get", default);
+
+            if(updateChannelDTO.AudioFailureId != null || updateChannelDTO.VideoFailureId != null ||
+               updateChannelDTO.GeneralFailureId != null || updateChannelDTO.InProcessing != null ||
+               updateChannelDTO.MonitoringStartTime != null || updateChannelDTO.MonitoringEndTime != null ||
+               updateChannelDTO.Port != null || updateChannelDTO.Ip != null)
+            {
+                await repositorioUpdateEntity.SendUpdateEntity(repositorio, mapper, updatedChannel);
+            }
+            
             return TypedResults.NoContent();
+
         }
 
         static async Task<Ok<List<ChannelDTO>>> GetAll
