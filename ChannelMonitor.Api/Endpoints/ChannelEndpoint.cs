@@ -3,6 +3,7 @@ using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Repositories;
+using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -48,7 +49,7 @@ namespace ChannelMonitor.Api.Endpoints
 
         static async Task<Results<NoContent, NotFound, ValidationProblem>> Update(int id, [FromForm] UpdateChannelDTO updateChannelDTO,
             IRepositorioChannel repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, IRepositorioAlertStatus repositorioAlertStatus,
-            IRepositorioChannelDetail repositorioChannelDetail, IRepositorioUpdateEntity repositorioUpdateEntity)
+            IRepositorioChannelDetail repositorioChannelDetail, IUpdateEntitySignalR updateEntitySignalR)
         {
             var channelDb = await repositorio.GetById(id);
             if(channelDb is null) return TypedResults.NotFound();
@@ -63,7 +64,7 @@ namespace ChannelMonitor.Api.Endpoints
                updateChannelDTO.MonitoringStartTime != null || updateChannelDTO.MonitoringEndTime != null ||
                updateChannelDTO.Port != null || updateChannelDTO.Ip != null)
             {
-                await repositorioUpdateEntity.SendUpdateEntity(repositorio, mapper, updatedChannel);
+                await updateEntitySignalR.SendUpdateEntity(repositorio, mapper, updatedChannel);
             }
             
             return TypedResults.NoContent();

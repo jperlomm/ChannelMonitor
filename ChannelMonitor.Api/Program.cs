@@ -43,7 +43,7 @@ builder.Services.AddCors(opciones =>
 {
     opciones.AddDefaultPolicy(configuracion =>
     {
-        configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173" ).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173", "http://localhost:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 
 });
@@ -80,7 +80,7 @@ builder.Services.AddScoped<IRepositorioFailureLogging, RepositorioFailureLogging
 builder.Services.AddTransient<IUsersServices, UsersServices>();
 builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
 
-builder.Services.AddScoped<IRepositorioUpdateEntity, RepositorioUpdateEntity>();
+builder.Services.AddScoped<IUpdateEntitySignalR, UpdateEntitySignalR>();
 
 builder.Services.AddHttpContextAccessor();
 

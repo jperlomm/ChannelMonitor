@@ -2,15 +2,16 @@
 using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Hub;
+using ChannelMonitor.Api.Repositories;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ChannelMonitor.Api.Repositories
+namespace ChannelMonitor.Api.Services
 {
-    public class RepositorioUpdateEntity : IRepositorioUpdateEntity
+    public class UpdateEntitySignalR : IUpdateEntitySignalR
     {
         private readonly IHubContext<UpdateEntitiHub> _hubContext;
 
-        public RepositorioUpdateEntity(IHubContext<UpdateEntitiHub> hubContext)
+        public UpdateEntitySignalR(IHubContext<UpdateEntitiHub> hubContext)
         {
             _hubContext = hubContext;
         }
