@@ -42,8 +42,7 @@ namespace ChannelMonitor.Api.Endpoints
         {
             var usuario = new IdentityUser
             {
-                UserName = userCredentialsDTO.Email,
-                Email = userCredentialsDTO.Email
+                UserName = userCredentialsDTO.UserName
             };
 
             var resultado = await userManager.CreateAsync(usuario, userCredentialsDTO.Password);
@@ -64,7 +63,7 @@ namespace ChannelMonitor.Api.Endpoints
             UserCredentialsDTO userCredentialsDTO, [FromServices] SignInManager<IdentityUser> signInManager,
             [FromServices] UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
-            var usuario = await userManager.FindByEmailAsync(userCredentialsDTO.Email);
+            var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);            
 
             if (usuario is null)
             {
@@ -89,12 +88,13 @@ namespace ChannelMonitor.Api.Endpoints
         private async static Task<ResponseAuthenticationDTO> CreateToken(UserCredentialsDTO userCredentialsDTO,
             IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
+
             var claims = new List<Claim>
             {
-                new Claim("email", userCredentialsDTO.Email)
+                new Claim("username", userCredentialsDTO.UserName)
             };
 
-            var usuario = await userManager.FindByNameAsync(userCredentialsDTO.Email);
+            var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);
             var claimsDB = await userManager.GetClaimsAsync(usuario!);
 
             claims.AddRange(claimsDB);
@@ -119,7 +119,7 @@ namespace ChannelMonitor.Api.Endpoints
         static async Task<Results<NoContent, NotFound>> SetAdmin(EditClaimDTO editClaimDTO,
             [FromServices] UserManager<IdentityUser> userManager)
         {
-            var usuario = await userManager.FindByEmailAsync(editClaimDTO.Email);
+            var usuario = await userManager.FindByNameAsync(editClaimDTO.UserName);
             if (usuario is null)
             {
                 return TypedResults.NotFound();
@@ -132,7 +132,7 @@ namespace ChannelMonitor.Api.Endpoints
         static async Task<Results<NoContent, NotFound>> RemoveAdmin(EditClaimDTO editClaimDTO,
             [FromServices] UserManager<IdentityUser> userManager)
         {
-            var usuario = await userManager.FindByEmailAsync(editClaimDTO.Email);
+            var usuario = await userManager.FindByNameAsync(editClaimDTO.UserName);
             if (usuario is null)
             {
                 return TypedResults.NotFound();
@@ -153,7 +153,7 @@ namespace ChannelMonitor.Api.Endpoints
                 return TypedResults.NotFound();
             }
 
-            var userCredentialsDTO = new UserCredentialsDTO { Email = usuario.Email! };
+            var userCredentialsDTO = new UserCredentialsDTO { UserName = usuario.UserName! };
 
             var respuestaAutenticacionDTO = await CreateToken(userCredentialsDTO, configuration,
                 userManager);
