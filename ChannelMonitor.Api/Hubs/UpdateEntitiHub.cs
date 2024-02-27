@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using ChannelMonitor.Api.DTOs;
-using ChannelMonitor.Api.Repositories;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace ChannelMonitor.Api.Hub
 {

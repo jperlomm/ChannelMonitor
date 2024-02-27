@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Hub;
 using ChannelMonitor.Api.Repositories;
@@ -18,9 +17,7 @@ namespace ChannelMonitor.Api.Services
 
         public async Task SendUpdateEntity(IRepositorioChannel repositorio, IMapper mapper, Channel channel)
         {
-            var channelsDTO = mapper.Map<ChannelDTO>(channel);
-
-            await _hubContext.Clients.All.SendAsync("updatechannel", channelsDTO);
+            await _hubContext.Clients.All.SendAsync("updatechannel", channel);
         }
     }
 
