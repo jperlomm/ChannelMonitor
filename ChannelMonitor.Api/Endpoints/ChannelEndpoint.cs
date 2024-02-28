@@ -16,15 +16,15 @@ namespace ChannelMonitor.Api.Endpoints
     {
         public static RouteGroupBuilder MapChannels(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll);
+            group.MapGet("/", GetAll).RequireAuthorization().WithOpenApi();
 
-            group.MapGet("/alarmed", GetAlarmedChannels);
+            group.MapGet("/alarmed", GetAlarmedChannels).RequireAuthorization().WithOpenApi();
 
-            group.MapGet("/{id:int}", GetById);
+            group.MapGet("/{id:int}", GetById).RequireAuthorization().WithOpenApi();
 
-            group.MapGet("/filter", GetByFilter).AddParameterChannelFilterAOpenAPI();
+            group.MapGet("/filter", GetByFilter).AddParameterChannelFilterAOpenAPI().RequireAuthorization();
 
-            group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi(); ;
+            group.MapPost("/", Create).DisableAntiforgery().RequireAuthorization().WithOpenApi();
 
             group.MapPut("/{id:int}", Update).DisableAntiforgery().AddEndpointFilter<ValidationFilters<UpdateChannelDTO>>()
                 .RequireAuthorization().WithOpenApi();
@@ -36,10 +36,12 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Created<ChannelDTO>> Create([FromForm] CreateChannelDTO createChannelDTO,
-            IRepositorioChannel repositorio, IOutputCacheStore outputCacheStore, IMapper mapper)
+            IRepositorioChannel repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, ITenantProvider tenantProvider)
         {
 
             var channel = mapper.Map<Channel>(createChannelDTO);
+
+            channel.TenantId = tenantProvider.GetTenantId();
 
             var id = await repositorio.Create(channel);
             await outputCacheStore.EvictByTagAsync("channel-get", default);

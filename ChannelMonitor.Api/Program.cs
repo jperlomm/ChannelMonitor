@@ -7,19 +7,11 @@ using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Swagger;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Net;
-using System.Net.WebSockets;
-using System.Text;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Http.Connections;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,14 +22,14 @@ var allowOrigins = builder.Configuration.GetValue<string>("allowOrigins")!;
 builder.Services.AddDbContext<ApplicationDBContext>(opciones =>
     opciones.UseSqlServer("name=DefaultConnection"));
 
-builder.Services.AddIdentityCore<IdentityUser>()
+builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDBContext>()
     .AddDefaultTokenProviders();
 
 // Para crear y manejar usuarios
-builder.Services.AddScoped<UserManager<IdentityUser>>();
+builder.Services.AddScoped<UserManager<ApplicationUser>>();
 // Para logear usuarios
-builder.Services.AddScoped<SignInManager<IdentityUser>>();
+builder.Services.AddScoped<SignInManager<ApplicationUser>>();
 
 builder.Services.AddCors(opciones =>
 {
@@ -82,6 +74,8 @@ builder.Services.AddTransient<IUsersServices, UsersServices>();
 builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
 
 builder.Services.AddScoped<IUpdateEntitySignalR, UpdateEntitySignalR>();
+
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
 builder.Services.AddHttpContextAccessor();
 

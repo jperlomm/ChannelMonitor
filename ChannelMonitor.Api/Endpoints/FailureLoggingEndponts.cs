@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Services;
+using System.Threading.Channels;
 
 namespace ChannelMonitor.Api.Endpoints
 {
@@ -15,11 +16,12 @@ namespace ChannelMonitor.Api.Endpoints
 
         public static RouteGroupBuilder MapFailureLogging(this RouteGroupBuilder group)
         {
-            group.MapGet("/", GetAll).DisableAntiforgery();
+            group.MapGet("/", GetAll).RequireAuthorization().DisableAntiforgery();
 
             group.MapPost("/", Create)
                 .DisableAntiforgery()
                 .AddEndpointFilter<ValidationFilters<CreateFailureLoggingDTO>>()
+                .RequireAuthorization()
                 .WithOpenApi();
 
             return group;
@@ -40,11 +42,14 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Created<FailureLoggingDTO>> Create([FromForm] CreateFailureLoggingDTO failureLoggingDTO,
-            IRepositorioFailureLogging repositorio, IMapper mapper, IFileStorage iFileStorage)
+            IRepositorioFailureLogging repositorio, IMapper mapper, IFileStorage iFileStorage,
+            ITenantProvider tenantProvider)
         {
 
             var failureLoggin = mapper.Map<FailureLogging>(failureLoggingDTO);
             failureLoggin.DateFailure = DateTime.Now;
+
+            failureLoggin.TenantId = tenantProvider.GetTenantId();
 
             if (failureLoggingDTO.File is not null)
             {

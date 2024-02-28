@@ -8,6 +8,7 @@
         public string? Url { get; set; }
         public DateTime? DateFailure { get; set; }
         public string? Detail { get; set; }
+        public Guid? TenantId { get; set; }
     }
 
 }

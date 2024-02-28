@@ -1,19 +1,38 @@
 ﻿using ChannelMonitor.Api.Entities;
+using ChannelMonitor.Api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChannelMonitor.Api
 {
-    public class ApplicationDBContext : IdentityDbContext
+    public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDBContext(DbContextOptions options) : base(options)
+        private readonly Guid? _tenantId;
+
+        public ApplicationDBContext(
+            DbContextOptions<ApplicationDBContext> options,
+            ITenantProvider tenantProvider)
+            : base(options)
         {
+            _tenantId = tenantProvider.GetTenantId();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Channel>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
+
+            modelBuilder.Entity<ChannelOrigin>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
+
+            modelBuilder.Entity<ChannelDetail>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
+
+            modelBuilder.Entity<FailureLogging>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
 
             modelBuilder.Entity<Channel>()
                 .HasOne(c => c.VideoFailure)
@@ -35,8 +54,21 @@ namespace ChannelMonitor.Api
                 .HasForeignKey(c => c.GeneralFailureId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<AlertStatus>().HasData(
+                new AlertStatus { Id = 1, Name = "Ok", Color = "green", Emoji = null },
+                new AlertStatus { Id = 2, Name = "Alert", Color = "yellow", Emoji = null },
+                new AlertStatus { Id = 3, Name = "Fail", Color = "red", Emoji = null },
+                new AlertStatus { Id = 4, Name = "Pause", Color = "grey", Emoji = null }
+            );
+
+            modelBuilder.Entity<FailureType>().HasData(
+                new FailureType { Id = 1, Name = "Audio" },
+                new FailureType { Id = 2, Name = "Video" },
+                new FailureType { Id = 3, Name = "General" }
+            );
+
             // Seteamos nombres personalizados a las tablas de roles.
-            modelBuilder.Entity<IdentityUser>().ToTable("Usuarios");
+            modelBuilder.Entity<ApplicationUser>().ToTable("Usuarios");
             modelBuilder.Entity<IdentityRole>().ToTable("Roles");
             modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RolesClaims");
             modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UsuariosClaims");
@@ -53,6 +85,7 @@ namespace ChannelMonitor.Api
         public DbSet<FailureLogging> FailureLoggings { get; set; }
         public DbSet<FailureType> FailureTypes { get; set; }
         public DbSet<Error> Errors { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
 
     }
 }

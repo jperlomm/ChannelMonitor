@@ -1,4 +1,5 @@
 ﻿using ChannelMonitor.Api.DTOs;
+using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Filters;
 using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Utilities;
@@ -6,10 +7,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Win32;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ChannelMonitor.Api.Endpoints
 {
@@ -21,7 +20,7 @@ namespace ChannelMonitor.Api.Endpoints
                 .AddEndpointFilter<ValidationFilters<UserCredentialsDTO>>();
 
             group.MapPost("/login", Login)
-                .AddEndpointFilter<ValidationFilters<UserCredentialsDTO>>();
+                .AddEndpointFilter<ValidationFilters<LoginUserCredentialsDTO>>();
 
             group.MapPost("/setadmin", SetAdmin)
                 .AddEndpointFilter<ValidationFilters<EditClaimDTO>>()
@@ -38,11 +37,12 @@ namespace ChannelMonitor.Api.Endpoints
 
         static async Task<Results<Ok<ResponseAuthenticationDTO>, BadRequest<IEnumerable<IdentityError>>>>
             Register(UserCredentialsDTO userCredentialsDTO,
-            [FromServices] UserManager<IdentityUser> userManager, IConfiguration configuration)
+            [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
-            var usuario = new IdentityUser
+            var usuario = new ApplicationUser
             {
-                UserName = userCredentialsDTO.UserName
+                UserName = userCredentialsDTO.UserName,
+                TenantId = userCredentialsDTO.TenantId
             };
 
             var resultado = await userManager.CreateAsync(usuario, userCredentialsDTO.Password);
@@ -60,8 +60,8 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Results<Ok<ResponseAuthenticationDTO>, BadRequest<string>>> Login(
-            UserCredentialsDTO userCredentialsDTO, [FromServices] SignInManager<IdentityUser> signInManager,
-            [FromServices] UserManager<IdentityUser> userManager, IConfiguration configuration)
+            LoginUserCredentialsDTO userCredentialsDTO, [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);            
 
@@ -76,7 +76,7 @@ namespace ChannelMonitor.Api.Endpoints
             if (resultado.Succeeded)
             {
                 var respuestaAutenticacion =
-                    await CreateToken(userCredentialsDTO, configuration, userManager);
+                    await CreateTokenLogin(userCredentialsDTO, configuration, userManager, usuario);
                 return TypedResults.Ok(respuestaAutenticacion);
             }
             else
@@ -86,12 +86,45 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         private async static Task<ResponseAuthenticationDTO> CreateToken(UserCredentialsDTO userCredentialsDTO,
-            IConfiguration configuration, UserManager<IdentityUser> userManager)
+            IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
 
             var claims = new List<Claim>
             {
-                new Claim("username", userCredentialsDTO.UserName)
+                new Claim("username", userCredentialsDTO.UserName),
+                new Claim("tenant_id", userCredentialsDTO.TenantId.ToString())
+            };
+
+            var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);
+            var claimsDB = await userManager.GetClaimsAsync(usuario!);
+
+            claims.AddRange(claimsDB);
+
+            var llave = Keys.GetKey(configuration);
+            var creds = new SigningCredentials(llave.First(), SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddYears(1);
+
+            var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
+                expires: expiration, signingCredentials: creds);
+
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenDeSeguridad);
+
+            return new ResponseAuthenticationDTO
+            {
+                Token = token,
+                Expiration = expiration
+            };
+        }
+
+        private async static Task<ResponseAuthenticationDTO> CreateTokenLogin(LoginUserCredentialsDTO userCredentialsDTO,
+            IConfiguration configuration, UserManager<ApplicationUser> userManager, ApplicationUser applicationUser)
+        {
+
+            var claims = new List<Claim>
+            {
+                new Claim("username", userCredentialsDTO.UserName),
+                new Claim("tenant_id", applicationUser.TenantId.ToString())
             };
 
             var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);
@@ -117,7 +150,7 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Results<NoContent, NotFound>> SetAdmin(EditClaimDTO editClaimDTO,
-            [FromServices] UserManager<IdentityUser> userManager)
+            [FromServices] UserManager<ApplicationUser> userManager)
         {
             var usuario = await userManager.FindByNameAsync(editClaimDTO.UserName);
             if (usuario is null)
@@ -130,7 +163,7 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Results<NoContent, NotFound>> RemoveAdmin(EditClaimDTO editClaimDTO,
-            [FromServices] UserManager<IdentityUser> userManager)
+            [FromServices] UserManager<ApplicationUser> userManager)
         {
             var usuario = await userManager.FindByNameAsync(editClaimDTO.UserName);
             if (usuario is null)
@@ -144,7 +177,7 @@ namespace ChannelMonitor.Api.Endpoints
 
         public async static Task<Results<Ok<ResponseAuthenticationDTO>, NotFound>> RenewToken(
             IUsersServices usersServices, IConfiguration configuration,
-            [FromServices] UserManager<IdentityUser> userManager)
+            [FromServices] UserManager<ApplicationUser> userManager)
         {
             var usuario = await usersServices.GetUser();
 

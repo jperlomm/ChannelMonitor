@@ -31,6 +31,7 @@
         public DateTime? LastScan { get; set; }
         public double? LastVolume { get; set; }
         public int? IdChannelBackUp { get; set; }
+        public Guid? TenantId { get; set; }
 
     }
 }

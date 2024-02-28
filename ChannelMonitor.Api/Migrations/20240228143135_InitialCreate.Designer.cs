@@ -4,6 +4,7 @@ using ChannelMonitor.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChannelMonitor.Api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240228143135_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,32 +46,6 @@ namespace ChannelMonitor.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AlertStatus");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Color = "green",
-                            Name = "Ok"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Color = "yellow",
-                            Name = "Alert"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Color = "red",
-                            Name = "Fail"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Color = "grey",
-                            Name = "Pause"
-                        });
                 });
 
             modelBuilder.Entity("ChannelMonitor.Api.Entities.ApplicationUser", b =>
@@ -341,23 +318,6 @@ namespace ChannelMonitor.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FailureTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Audio"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Video"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "General"
-                        });
                 });
 
             modelBuilder.Entity("ChannelMonitor.Api.Entities.Tenant", b =>
