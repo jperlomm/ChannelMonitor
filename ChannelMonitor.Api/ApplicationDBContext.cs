@@ -67,6 +67,10 @@ namespace ChannelMonitor.Api
                 new FailureType { Id = 3, Name = "General" }
             );
 
+            modelBuilder.Entity<Tenant>().HasData(
+                new Tenant { Id = new Guid("ec576c36-9da4-4d2c-821e-7888f0b4e8a9"), Name = "General" }
+            );
+
             // Seteamos nombres personalizados a las tablas de roles.
             modelBuilder.Entity<ApplicationUser>().ToTable("Usuarios");
             modelBuilder.Entity<IdentityRole>().ToTable("Roles");

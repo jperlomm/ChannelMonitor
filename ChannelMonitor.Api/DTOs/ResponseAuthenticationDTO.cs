@@ -3,6 +3,6 @@
     public class ResponseAuthenticationDTO
     {
         public string Token { get; set; } = null!;
-        public DateTime Expiration { get; set; }
+        public DateTime? Expiration { get; set; }
     }
 }

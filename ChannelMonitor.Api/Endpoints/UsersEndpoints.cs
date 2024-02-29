@@ -17,10 +17,15 @@ namespace ChannelMonitor.Api.Endpoints
         public static RouteGroupBuilder MapUsers(this RouteGroupBuilder group)
         {
             group.MapPost("/register", Register)
-                .AddEndpointFilter<ValidationFilters<UserCredentialsDTO>>();
+                .AddEndpointFilter<ValidationFilters<UserCredentialsDTO>>()
+                .RequireAuthorization("isadmin");
+
+            group.MapPost("/registerUserForTenant", RegisterUserForTenant)
+                .AddEndpointFilter<ValidationFilters<TenantUserCredentialsDTO>>()
+                .RequireAuthorization("issuperadmin");
 
             group.MapPost("/login", Login)
-                .AddEndpointFilter<ValidationFilters<LoginUserCredentialsDTO>>();
+                .AddEndpointFilter<ValidationFilters<UserCredentialsDTO>>();
 
             group.MapPost("/setadmin", SetAdmin)
                 .AddEndpointFilter<ValidationFilters<EditClaimDTO>>()
@@ -37,12 +42,13 @@ namespace ChannelMonitor.Api.Endpoints
 
         static async Task<Results<Ok<ResponseAuthenticationDTO>, BadRequest<IEnumerable<IdentityError>>>>
             Register(UserCredentialsDTO userCredentialsDTO,
-            [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration)
+            [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration,
+            ITenantProvider tenantProvider)
         {
             var usuario = new ApplicationUser
             {
                 UserName = userCredentialsDTO.UserName,
-                TenantId = userCredentialsDTO.TenantId
+                TenantId = tenantProvider.GetTenantId()
             };
 
             var resultado = await userManager.CreateAsync(usuario, userCredentialsDTO.Password);
@@ -50,7 +56,37 @@ namespace ChannelMonitor.Api.Endpoints
             if (resultado.Succeeded)
             {
                 var credencialesRespuesta =
-                    await CreateToken(userCredentialsDTO, configuration, userManager);
+                    await CreateToken(userCredentialsDTO, configuration, userManager, usuario);
+                return TypedResults.Ok(credencialesRespuesta);
+            }
+            else
+            {
+                return TypedResults.BadRequest(resultado.Errors);
+            }
+        }
+
+        static async Task<Results<Ok<ResponseAuthenticationDTO>, BadRequest<IEnumerable<IdentityError>>>>
+            RegisterUserForTenant(TenantUserCredentialsDTO tenantUserCredentialsDTO,
+            [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        {
+            var usuario = new ApplicationUser
+            {
+                UserName = tenantUserCredentialsDTO.UserName,
+                TenantId = tenantUserCredentialsDTO.TenantId
+            };
+
+            var resultado = await userManager.CreateAsync(usuario, tenantUserCredentialsDTO.Password);
+
+            if (resultado.Succeeded)
+            {
+                var credencialesRespuesta =
+                    await CreateTokenTenant(tenantUserCredentialsDTO, configuration, userManager);
+
+                if (tenantUserCredentialsDTO.IsAdmin)
+                {
+                    await userManager.AddClaimAsync(usuario, new Claim("isadmin", "true"));
+                }
+
                 return TypedResults.Ok(credencialesRespuesta);
             }
             else
@@ -60,7 +96,7 @@ namespace ChannelMonitor.Api.Endpoints
         }
 
         static async Task<Results<Ok<ResponseAuthenticationDTO>, BadRequest<string>>> Login(
-            LoginUserCredentialsDTO userCredentialsDTO, [FromServices] SignInManager<ApplicationUser> signInManager,
+            UserCredentialsDTO userCredentialsDTO, [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromServices] UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);            
@@ -76,7 +112,7 @@ namespace ChannelMonitor.Api.Endpoints
             if (resultado.Succeeded)
             {
                 var respuestaAutenticacion =
-                    await CreateTokenLogin(userCredentialsDTO, configuration, userManager, usuario);
+                    await CreateToken(userCredentialsDTO, configuration, userManager, usuario);
                 return TypedResults.Ok(respuestaAutenticacion);
             }
             else
@@ -85,17 +121,17 @@ namespace ChannelMonitor.Api.Endpoints
             }
         }
 
-        private async static Task<ResponseAuthenticationDTO> CreateToken(UserCredentialsDTO userCredentialsDTO,
+        private async static Task<ResponseAuthenticationDTO> CreateTokenTenant(TenantUserCredentialsDTO tenantUserCredentialsDTO,
             IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
 
             var claims = new List<Claim>
             {
-                new Claim("username", userCredentialsDTO.UserName),
-                new Claim("tenant_id", userCredentialsDTO.TenantId.ToString())
+                new Claim("username", tenantUserCredentialsDTO.UserName),
+                new Claim("tenant_id", tenantUserCredentialsDTO.TenantId.ToString())
             };
 
-            var usuario = await userManager.FindByNameAsync(userCredentialsDTO.UserName);
+            var usuario = await userManager.FindByNameAsync(tenantUserCredentialsDTO.UserName);
             var claimsDB = await userManager.GetClaimsAsync(usuario!);
 
             claims.AddRange(claimsDB);
@@ -103,7 +139,12 @@ namespace ChannelMonitor.Api.Endpoints
             var llave = Keys.GetKey(configuration);
             var creds = new SigningCredentials(llave.First(), SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddYears(1);
+            DateTime? expiration = DateTime.UtcNow.AddYears(1);
+
+            if (tenantUserCredentialsDTO.HasNoEndDate)
+            {
+                expiration = null;
+            }
 
             var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
                 expires: expiration, signingCredentials: creds);
@@ -117,7 +158,7 @@ namespace ChannelMonitor.Api.Endpoints
             };
         }
 
-        private async static Task<ResponseAuthenticationDTO> CreateTokenLogin(LoginUserCredentialsDTO userCredentialsDTO,
+        private async static Task<ResponseAuthenticationDTO> CreateToken(UserCredentialsDTO userCredentialsDTO,
             IConfiguration configuration, UserManager<ApplicationUser> userManager, ApplicationUser applicationUser)
         {
 
@@ -189,7 +230,7 @@ namespace ChannelMonitor.Api.Endpoints
             var userCredentialsDTO = new UserCredentialsDTO { UserName = usuario.UserName! };
 
             var respuestaAutenticacionDTO = await CreateToken(userCredentialsDTO, configuration,
-                userManager);
+                userManager, usuario);
 
             return TypedResults.Ok(respuestaAutenticacionDTO);
 

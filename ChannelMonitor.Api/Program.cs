@@ -1,4 +1,5 @@
 using ChannelMonitor.Api;
+using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Hub;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -109,6 +111,7 @@ builder.Services.AddAuthorization(options =>
 {
     // Agregamos politica de administrador.
     options.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
+    options.AddPolicy("issuperadmin", policy => policy.RequireClaim("issuperadmin"));
 });
 
 builder.Services.AddSignalR();
@@ -116,6 +119,30 @@ builder.Services.AddSignalR();
 // Servicios
 var app = builder.Build();
 // Middleware
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDBContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var username = "SuperAdmin";
+
+    // Verificar si el usuario ya existe
+    var existingUser = await userManager.FindByNameAsync(username);
+    if (existingUser == null)
+    {
+        // Crear el usuario solo si no existe
+        var usuario = new ApplicationUser
+        {
+            UserName = username,
+            TenantId = new Guid("ec576c36-9da4-4d2c-821e-7888f0b4e8a9")
+        };
+
+        await userManager.CreateAsync(usuario, "aA123456!e15j6s84");
+        await userManager.AddClaimAsync(usuario, new Claim("issuperadmin", "true"));
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -8,6 +8,5 @@ namespace ChannelMonitor.Api.DTOs
 
         public string Password { get; set; } = null!;
 
-        public Guid TenantId { get; set; }
     }
 }
