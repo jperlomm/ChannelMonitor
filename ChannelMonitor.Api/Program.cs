@@ -8,7 +8,9 @@ using ChannelMonitor.Api.Services;
 using ChannelMonitor.Api.Swagger;
 using ChannelMonitor.Api.Utilities;
 using FluentValidation;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -27,6 +29,10 @@ builder.Services.AddDbContext<ApplicationDBContext>(opciones =>
 builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDBContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddHealthChecks()
+    .AddSqlServer("Server=127.0.0.1;Database=ChannelMonitorAPI;Integrated Security=False;User ID=sa;Password=sa;TrustServerCertificate=True")
+    .AddSignalRHub("https://localhost:7179/myhub");
 
 // Para crear y manejar usuarios
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
@@ -184,6 +190,11 @@ app.MapGroup("/users").MapUsers();
 app.MapGroup("/failureloggin").MapFailureLogging();
 
 app.MapHub<UpdateEntitiHub>("/myhub");
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 // Middleware
 app.Run();
