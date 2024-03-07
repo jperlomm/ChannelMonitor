@@ -31,8 +31,8 @@ builder.Services.AddIdentityCore<ApplicationUser>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddHealthChecks()
-    .AddSqlServer("Server=127.0.0.1;Database=ChannelMonitorAPI;Integrated Security=False;User ID=sa;Password=sa;TrustServerCertificate=True")
-    .AddSignalRHub("https://localhost:7179/myhub");
+    .AddSqlServer("Server=127.0.0.1;Database=ChannelMonitorAPI.Tenant;Integrated Security=False;User ID=sa;Password=sa;TrustServerCertificate=True")
+    .AddSignalRHub("http://192.168.32.121:10121/myhub");
 
 // Para crear y manejar usuarios
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
@@ -43,7 +43,7 @@ builder.Services.AddCors(opciones =>
 {
     opciones.AddDefaultPolicy(configuracion =>
     {
-        //configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173", "http://localhost:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        //configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         configuracion.WithOrigins(allowOrigins).AllowAnyHeader().AllowAnyMethod();
     });
 
@@ -189,7 +189,7 @@ app.MapGroup("/channels").MapChannels();
 app.MapGroup("/users").MapUsers();
 app.MapGroup("/failureloggin").MapFailureLogging();
 
-app.MapHub<UpdateEntitiHub>("/myhub");
+app.MapHub<UpdateEntitiHub>("/myhub").RequireAuthorization();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

@@ -61,11 +61,10 @@ namespace ChannelMonitor.Api.Endpoints
             await repositorio.Update(updatedChannel);
             await outputCacheStore.EvictByTagAsync("channel-get", default);
 
-            if(updateChannelDTO.InProcessing != null || updateChannelDTO.MonitoringStartTime != null || 
-               updateChannelDTO.MonitoringEndTime != null || updateChannelDTO.Port != null || 
-               updateChannelDTO.Ip != null)
+            if(updateChannelDTO.AudioFailureId != null || updateChannelDTO.VideoFailureId != null || 
+               updateChannelDTO.GeneralFailureId != null)
             {
-                await updateEntitySignalR.SendUpdateEntity(repositorio, mapper, updatedChannel);
+                await updateEntitySignalR.SendUpdateEntity();
             }
             
             return TypedResults.NoContent();

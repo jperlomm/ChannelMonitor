@@ -139,11 +139,11 @@ namespace ChannelMonitor.Api.Endpoints
             var llave = Keys.GetKey(configuration);
             var creds = new SigningCredentials(llave.First(), SecurityAlgorithms.HmacSha256);
 
-            DateTime? expiration = DateTime.UtcNow.AddYears(1);
+            DateTime? expiration = DateTime.UtcNow.AddMinutes(60);
 
             if (tenantUserCredentialsDTO.HasNoEndDate)
             {
-                expiration = null;
+                expiration = DateTime.UtcNow.AddYears(10);
             }
 
             var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
@@ -176,7 +176,7 @@ namespace ChannelMonitor.Api.Endpoints
             var llave = Keys.GetKey(configuration);
             var creds = new SigningCredentials(llave.First(), SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddYears(1);
+            var expiration = DateTime.UtcNow.AddMinutes(60);
 
             var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
                 expires: expiration, signingCredentials: creds);

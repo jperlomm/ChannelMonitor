@@ -34,6 +34,9 @@ namespace ChannelMonitor.Api
             modelBuilder.Entity<FailureLogging>()
                 .HasQueryFilter(o => o.TenantId == _tenantId);
 
+            modelBuilder.Entity<Worker>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
+
             modelBuilder.Entity<Channel>()
                 .HasOne(c => c.VideoFailure)
                 .WithMany()
@@ -90,6 +93,7 @@ namespace ChannelMonitor.Api
         public DbSet<FailureType> FailureTypes { get; set; }
         public DbSet<Error> Errors { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
+        public DbSet<Worker> Workers { get; set; }
 
     }
 }

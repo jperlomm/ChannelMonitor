@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ChannelMonitor.Api.Entities;
+using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Hub;
 using ChannelMonitor.Api.Repositories;
 using Microsoft.AspNetCore.SignalR;
@@ -9,15 +9,21 @@ namespace ChannelMonitor.Api.Services
     public class UpdateEntitySignalR : IUpdateEntitySignalR
     {
         private readonly IHubContext<UpdateEntitiHub> _hubContext;
+        private readonly IMapper _mapper;
+        private readonly IRepositorioChannel _repositorio;
 
-        public UpdateEntitySignalR(IHubContext<UpdateEntitiHub> hubContext)
+        public UpdateEntitySignalR(IHubContext<UpdateEntitiHub> hubContext, IMapper mapper, IRepositorioChannel repositorio)
         {
             _hubContext = hubContext;
+            _mapper = mapper;
+            _repositorio = repositorio;
         }
 
-        public async Task SendUpdateEntity(IRepositorioChannel repositorio, IMapper mapper, Channel channel)
+        public async Task SendUpdateEntity()
         {
-            await _hubContext.Clients.All.SendAsync("updatechannel", channel);
+            var channels = await _repositorio.GetAlarmedChannels();
+            var channelsDTO = _mapper.Map<List<ChannelDTO>>(channels);
+            await _hubContext.Clients.All.SendAsync("updatechannel", channelsDTO);
         }
     }
 
