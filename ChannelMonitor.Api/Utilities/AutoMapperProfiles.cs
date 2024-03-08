@@ -16,6 +16,10 @@ namespace ChannelMonitor.Api.Utilities
 
             CreateMap<Channel, ChannelDTO>();
 
+            CreateMap<Worker, WorkerDTO>();
+
+            CreateMap<ContactsTenant, ContactsTenantDTO>();
+
             CreateMap<int?, int>().ConvertUsing((src, dest) => src ?? dest);
             CreateMap<string?, string>().ConvertUsing((src, dest) => src ?? dest);
             CreateMap<TimeSpan?, TimeSpan>().ConvertUsing((src, dest) => src ?? dest);

@@ -77,6 +77,8 @@ builder.Services.AddScoped<IRepositorioAlertStatus, RepositorioAlertStatus>();
 builder.Services.AddScoped<IRepositorioChannelDetail, RepositorioChannelDetail>();
 builder.Services.AddScoped<IRepositorioErrors, RepositorioErrors>();
 builder.Services.AddScoped<IRepositorioFailureLogging, RepositorioFailureLogging>();
+builder.Services.AddScoped<IRepositorioWorker, RepositorioWorker>();
+builder.Services.AddScoped<IRepositorioContactsTenant, RepositorioContactsTenant>();
 
 builder.Services.AddTransient<IUsersServices, UsersServices>();
 builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
@@ -84,6 +86,8 @@ builder.Services.AddScoped<IFileStorage, FileStorageLocal>();
 builder.Services.AddScoped<IUpdateEntitySignalR, UpdateEntitySignalR>();
 
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
+
+builder.Services.AddScoped<ISenderMessage, SenderMessageTelegram>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -188,6 +192,9 @@ app.MapGet("/", () => "use /swagger para documentación");
 app.MapGroup("/channels").MapChannels();
 app.MapGroup("/users").MapUsers();
 app.MapGroup("/failureloggin").MapFailureLogging();
+app.MapGroup("/workers").MapWorkers();
+app.MapGroup("/sendermessages").MapSenderMessages();
+app.MapGroup("/contacts").MapContactsTenant();
 
 app.MapHub<UpdateEntitiHub>("/myhub").RequireAuthorization();
 

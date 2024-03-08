@@ -37,6 +37,9 @@ namespace ChannelMonitor.Api
             modelBuilder.Entity<Worker>()
                 .HasQueryFilter(o => o.TenantId == _tenantId);
 
+            modelBuilder.Entity<ContactsTenant>()
+                .HasQueryFilter(o => o.TenantId == _tenantId);
+
             modelBuilder.Entity<Channel>()
                 .HasOne(c => c.VideoFailure)
                 .WithMany()
@@ -70,6 +73,11 @@ namespace ChannelMonitor.Api
                 new FailureType { Id = 3, Name = "General" }
             );
 
+            modelBuilder.Entity<MessageProvider>().HasData(
+                new MessageProvider { Id = 1, Name = "Telegram" },
+                new MessageProvider { Id = 2, Name = "Whatsapp" }
+            );
+
             modelBuilder.Entity<Tenant>().HasData(
                 new Tenant { Id = new Guid("ec576c36-9da4-4d2c-821e-7888f0b4e8a9"), Name = "General" }
             );
@@ -94,6 +102,8 @@ namespace ChannelMonitor.Api
         public DbSet<Error> Errors { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<Worker> Workers { get; set; }
+        public DbSet<MessageProvider> MessageProviders { get; set; }
+        public DbSet<ContactsTenant> ContactsTenants { get; set; }
 
     }
 }
