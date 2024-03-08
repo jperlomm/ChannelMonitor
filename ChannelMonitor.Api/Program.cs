@@ -1,5 +1,4 @@
 using ChannelMonitor.Api;
-using ChannelMonitor.Api.DTOs;
 using ChannelMonitor.Api.Endpoints;
 using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Hub;
@@ -20,6 +19,9 @@ using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 var allowOrigins = builder.Configuration.GetValue<string>("allowOrigins")!;
+var passSuperUser = builder.Configuration.GetValue<string>("passSuperUser")!;
+var nameSuperUser = builder.Configuration.GetValue<string>("nameSuperUser")!;
+var tenantGeneral = builder.Configuration.GetValue<string>("tenantGeneral")!;
 
 // Servicios
 
@@ -31,8 +33,8 @@ builder.Services.AddIdentityCore<ApplicationUser>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddHealthChecks()
-    .AddSqlServer("Server=127.0.0.1;Database=ChannelMonitorAPI.Tenant;Integrated Security=False;User ID=sa;Password=sa;TrustServerCertificate=True")
-    .AddSignalRHub("http://192.168.32.121:10121/myhub");
+    .AddSqlServer("Server=127.0.0.1;Database=ChannelMonitorAPI.Tenant;Integrated Security=False;User ID=sa;Password=sa;TrustServerCertificate=True");
+    //.AddSignalRHub("http://192.168.32.121:10121/myhub");
 
 // Para crear y manejar usuarios
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
@@ -43,7 +45,6 @@ builder.Services.AddCors(opciones =>
 {
     opciones.AddDefaultPolicy(configuracion =>
     {
-        //configuracion.WithOrigins("http://127.0.0.1:5173", "https://127.0.0.1:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         configuracion.WithOrigins(allowOrigins).AllowAnyHeader().AllowAnyMethod();
     });
 
@@ -136,7 +137,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = services.GetRequiredService<ApplicationDBContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-    var username = "SuperAdmin";
+    var username = nameSuperUser;
 
     // Verificar si el usuario ya existe
     var existingUser = await userManager.FindByNameAsync(username);
@@ -146,10 +147,10 @@ using (var scope = app.Services.CreateScope())
         var usuario = new ApplicationUser
         {
             UserName = username,
-            TenantId = new Guid("ec576c36-9da4-4d2c-821e-7888f0b4e8a9")
+            TenantId = new Guid(tenantGeneral)
         };
 
-        await userManager.CreateAsync(usuario, "aA123456!e15j6s84");
+        await userManager.CreateAsync(usuario, passSuperUser);
         await userManager.AddClaimAsync(usuario, new Claim("issuperadmin", "true"));
     }
 }

@@ -13,7 +13,7 @@ namespace ChannelMonitor.Api.Repositories
         }
         public async Task<List<ContactsTenant>> GetAll()
         {
-            return await _context.ContactsTenants.ToListAsync();
+            return await _context.ContactsTenants.Include(c => c.MessageProvider).ToListAsync();
         }
     }
 }

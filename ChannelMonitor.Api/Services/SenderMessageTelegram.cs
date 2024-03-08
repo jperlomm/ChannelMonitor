@@ -6,10 +6,15 @@ namespace ChannelMonitor.Api.Services
 {
     public class SenderMessageTelegram : ISenderMessage
     {
+        private readonly string _apiTokenTelegram;
+
+        public SenderMessageTelegram(IConfiguration configuration)
+        {
+            _apiTokenTelegram = configuration.GetValue<string>("apiTokenTelegram")!;
+        }
+
         public async Task SendMessage(string content, string destination)
         {
-            string apiTokenTelegram = "5265243375:AAFZjUcDdWgAmWtKhvlkftfDUalnzf9PVTU";
-
             // Seteamos variable _botClient.
             ITelegramBotClient _botClient;
 
@@ -17,7 +22,7 @@ namespace ChannelMonitor.Api.Services
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             // Instanciamos TelegramBotClient.
-            _botClient = new TelegramBotClient(apiTokenTelegram);
+            _botClient = new TelegramBotClient(_apiTokenTelegram);
 
             await _botClient.SendTextMessageAsync(destination, content);
 
