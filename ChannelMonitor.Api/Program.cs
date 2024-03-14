@@ -123,6 +123,7 @@ builder.Services.AddAuthorization(options =>
     // Agregamos politica de administrador.
     options.AddPolicy("isadmin", policy => policy.RequireClaim("isadmin"));
     options.AddPolicy("issuperadmin", policy => policy.RequireClaim("issuperadmin"));
+    options.AddPolicy("ishealther", policy => policy.RequireClaim("ishealther"));
 });
 
 builder.Services.AddSignalR();

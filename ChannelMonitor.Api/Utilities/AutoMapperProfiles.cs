@@ -16,7 +16,8 @@ namespace ChannelMonitor.Api.Utilities
 
             CreateMap<Channel, ChannelDTO>();
 
-            CreateMap<Worker, WorkerDTO>();
+            CreateMap<Worker, UpdateWorkerDTO>();
+            CreateMap<UpdateWorkerDTO, Worker>();
 
             CreateMap<ContactsTenant, ContactsTenantDTO>();
 

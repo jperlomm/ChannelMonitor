@@ -34,10 +34,10 @@ namespace ChannelMonitor.Api
             modelBuilder.Entity<FailureLogging>()
                 .HasQueryFilter(o => o.TenantId == _tenantId);
 
-            modelBuilder.Entity<Worker>()
+            modelBuilder.Entity<ContactsTenant>()
                 .HasQueryFilter(o => o.TenantId == _tenantId);
 
-            modelBuilder.Entity<ContactsTenant>()
+            modelBuilder.Entity<Worker>()
                 .HasQueryFilter(o => o.TenantId == _tenantId);
 
             modelBuilder.Entity<Channel>()

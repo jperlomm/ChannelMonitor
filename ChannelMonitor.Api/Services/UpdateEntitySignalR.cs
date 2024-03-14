@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChannelMonitor.Api.DTOs;
+using ChannelMonitor.Api.Entities;
 using ChannelMonitor.Api.Hub;
 using ChannelMonitor.Api.Repositories;
 using Microsoft.AspNetCore.SignalR;
@@ -13,7 +14,8 @@ namespace ChannelMonitor.Api.Services
         private readonly IRepositorioChannel _repositorio;
         private readonly ITenantProvider _tenantProvider;
 
-        public UpdateEntitySignalR(IHubContext<UpdateEntitiHub> hubContext, IMapper mapper, IRepositorioChannel repositorio, ITenantProvider tenantProvider)
+        public UpdateEntitySignalR(IHubContext<UpdateEntitiHub> hubContext, IMapper mapper, IRepositorioChannel repositorio, 
+            ITenantProvider tenantProvider)
         {
             _hubContext = hubContext;
             _mapper = mapper;
@@ -25,9 +27,15 @@ namespace ChannelMonitor.Api.Services
         {
             var channels = await _repositorio.GetAlarmedChannels();
             var channelsDTO = _mapper.Map<List<ChannelDTO>>(channels);
-            //await _hubContext.Clients.All.SendAsync("updatechannel", channelsDTO);
             await _hubContext.Clients.Group(_tenantProvider.GetTenantId().ToString()).SendAsync("updatechannel", channelsDTO);
         }
+
+        public async Task SendUpdateWorkerStatus(Worker worker)
+        {
+            var workerDTO = _mapper.Map<UpdateWorkerDTO>(worker);
+            await _hubContext.Clients.Group(worker.TenantId.ToString()).SendAsync("updateworkerstatus", workerDTO);
+        }
+
     }
 
 }

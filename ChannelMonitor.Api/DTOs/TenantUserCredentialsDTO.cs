@@ -7,5 +7,6 @@
         public Guid TenantId { get; set; }
         public bool HasNoEndDate { get; set; } = false;
         public bool IsAdmin { get; set; } = false;
+        public bool IsHealther { get; set; } = false;
     }
 }

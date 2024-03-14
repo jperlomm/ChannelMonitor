@@ -79,15 +79,20 @@ namespace ChannelMonitor.Api.Endpoints
 
             if (resultado.Succeeded)
             {
-                var credencialesRespuesta =
-                    await CreateTokenTenant(tenantUserCredentialsDTO, configuration, userManager);
-
                 if (tenantUserCredentialsDTO.IsAdmin)
                 {
                     await userManager.AddClaimAsync(usuario, new Claim("isadmin", "true"));
                 }
 
+                if (tenantUserCredentialsDTO.IsHealther)
+                {
+                    await userManager.AddClaimAsync(usuario, new Claim("ishealther", "true"));
+                }
+
+                var credencialesRespuesta = await CreateTokenTenant(tenantUserCredentialsDTO, configuration, userManager);
+
                 return TypedResults.Ok(credencialesRespuesta);
+
             }
             else
             {
